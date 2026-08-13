@@ -15,6 +15,7 @@ if (!(Test-Path -Path $workDir)) {
 Set-Location -Path $workDir
 
 # Función para descargar archivos desde las Releases públicas
+# Función para descargar archivos desde las Releases públicas
 function Descargar-Asset ($assetName, $destino) {
     $url = "https://github.com/$repoOwner/$repoName/releases/download/$tag/$assetName"
     Write-Host "Descargando $assetName..." -ForegroundColor Yellow
