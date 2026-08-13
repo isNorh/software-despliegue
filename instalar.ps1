@@ -15,6 +15,7 @@ if (!(Test-Path -Path $workDir)) {
 Set-Location -Path $workDir
 
 # Función para descargar archivos desde las Releases públicas
+# Función para descargar archivos desde las Releases públicas
 function Descargar-Asset ($assetName, $destino) {
     $url = "https://github.com/$repoOwner/$repoName/releases/download/$tag/$assetName"
     Write-Host "Descargando $assetName..." -ForegroundColor Yellow
@@ -22,7 +23,7 @@ function Descargar-Asset ($assetName, $destino) {
         Invoke-WebRequest -Uri $url -OutFile $destino -UseBasicParsing
         return $true
     } catch {
-        Write-Host "Error al descargar $assetName: $_" -ForegroundColor Red
+        Write-Host "Error al descargar $assetName : $($_.Exception.Message)" -ForegroundColor Red
         return $false
     }
 }
