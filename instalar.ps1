@@ -1,12 +1,20 @@
 # ==============================================================================
-# SCRIPT INTERACTIVO DE DESPLIEGUE DE SOFTWARE
+# SCRIPT INTERACTIVO DE DESPLIEGUE (CON AUTENTICACIÓN GITHUB)
 # ==============================================================================
 
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
+# Token para autenticar las peticiones (5.000 req/hora)
+$token = "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"
+
 $repoOwner = "isNorh"
 $repoName = "software-despliegue"
 $tag = "v1.0.0"
+
+$headers = @{
+    "Authorization" = "Bearer $token"
+    "User-Agent"    = "PowerShellScript"
+}
 
 $workDir = "C:\Setup_Temp"
 if (!(Test-Path -Path $workDir)) {
@@ -14,13 +22,14 @@ if (!(Test-Path -Path $workDir)) {
 }
 Set-Location -Path $workDir
 
-# Función para descargar archivos desde las Releases públicas
-# Función para descargar archivos desde las Releases públicas
+# Función de descarga autenticada
+# Función de descarga directa y limpia
 function Descargar-Asset ($assetName, $destino) {
     $url = "https://github.com/$repoOwner/$repoName/releases/download/$tag/$assetName"
     Write-Host "Descargando $assetName..." -ForegroundColor Yellow
     try {
-        Invoke-WebRequest -Uri $url -OutFile $destino -UseBasicParsing
+        # Usamos WebClient o Invoke-WebRequest sin headers que choquen con la redirección
+        Invoke-WebRequest -Uri $url -OutFile $destino -UseBasicParsing -UserAgent "Mozilla/5.0"
         return $true
     } catch {
         Write-Host "Error al descargar $assetName : $($_.Exception.Message)" -ForegroundColor Red
@@ -40,21 +49,18 @@ Write-Host " [A] INSTALAR TODOS" -ForegroundColor Green
 Write-Host " [Q] Salir" -ForegroundColor Gray
 Write-Host "==================================================" -ForegroundColor Cyan
 
-$opcion = Read-Host "Ingresa el número de la opción o combinación (ej: 1,3 o A para todos)"
+$opcion = Read-Host "Ingresa la opción (ej: 1,3 o A para todos)"
 
 if ($opcion -eq "Q" -or $opcion -eq "q") {
-    Write-Host "Operación cancelada por el usuario." -ForegroundColor Yellow
+    Write-Host "Operación cancelada." -ForegroundColor Yellow
     exit
 }
 
-# Determinar qué instalar
 $instalarAll   = ($opcion -eq "A" -or $opcion -eq "a")
 $instalarGLPI  = $instalarAll -or ($opcion -like "*1*")
 $instalarPanda = $instalarAll -or ($opcion -like "*2*")
 $instalarAgent = $instalarAll -or ($opcion -like "*3*")
 $instalarOffice= $instalarAll -or ($opcion -like "*4*")
-
-# --- EJECUCIÓN DE INSTALACIONES ---
 
 # 1. GLPI Agent
 if ($instalarGLPI) {
@@ -94,7 +100,7 @@ if ($instalarOffice) {
 
 # Limpieza
 Set-Location -Path "C:\"
-Write-Host ">>> Limpiando archivos temporales..." -ForegroundColor Cyan
+Write-Host ">>> Limpiando temporales..." -ForegroundColor Cyan
 if (Test-Path -Path $workDir) {
     Remove-Item -Path $workDir -Recurse -Force
 }
